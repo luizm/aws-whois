@@ -19,7 +19,7 @@ func Execute() {
 				DefaultText: "us-east-1",
 				Required:    false,
 			},
-			&cli.StringFlag{
+			&cli.StringSliceFlag{
 				Name:     "profile",
 				Aliases:  []string{"p"},
 				Usage:    "Use a specific profile from your credential file",
@@ -33,11 +33,13 @@ func Execute() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			result, err := whois.Find(c.String("profile"), c.String("region"), c.String("ip"))
-			if err != nil {
-				return err
+			for _, p := range c.StringSlice("profile") {
+				result, err := whois.FindIP(p, c.String("region"), c.String("ip"))
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(result))
 			}
-			fmt.Println(string(result))
 			return nil
 		},
 	}
