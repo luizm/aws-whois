@@ -1,0 +1,10 @@
+brews:
+  - name: aws-whois
+    github:
+      owner: luizm
+      name: homebrew-tap
+    homepage: https://github.com/luizm/aws-whois
+    description: CLI to find which aws resource are using a specific IP
+    folder: Formula
+    test: |
+      system "#{bin}/aws-whois -h"

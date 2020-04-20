@@ -2,9 +2,10 @@
 
 WIP - Just for fun
 
-`aws-whois --profile example --ip 172.20.202.101`
+`aws-whois --profile example --ip 172.20.X.X`
 
 ```log
+Checking in the profile: example
 {
   "OwnerId": "xxxxxxxx",
   "Description": "Interface for NAT Gateway nat-xxxxxxxxxxxx",
@@ -13,9 +14,13 @@ WIP - Just for fun
 }
 ```
 
-`aws-whois --profile example --ip 172.20.202.10`
+`aws-whois --profile example --profile example2 --ip 54.X.X.X`
 
 ```log
+Checking in the profile: example2
+ip 54.X.X.X not found
+
+Checking in the profile: example
 {
   "OwnerId": "xxxxxxxx",
   "VpcId": "vpc-xxxxxxxx",
