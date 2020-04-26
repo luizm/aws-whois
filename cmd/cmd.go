@@ -28,13 +28,26 @@ func Execute() {
 			&cli.StringFlag{
 				Name:     "ip",
 				Aliases:  []string{"i"},
-				Usage:    "The ip address to find",
-				Required: true,
+				Usage:    "The ip address to find the resource associated",
+				Required: false,
+			},
+			&cli.StringFlag{
+				Name:     "dns",
+				Aliases:  []string{"d"},
+				Usage:    "The dns address to find the resource associated, if return more than 1 ip, will be used the first",
+				Required: false,
 			},
 		},
 		Action: func(c *cli.Context) error {
+			var ip string
+			ip = c.String("ip")
+
+			if c.String("dns") != "" {
+				ips, _ := whois.ResolvDNS(c.String("dns"))
+				ip = ips[0]
+			}
 			for _, p := range c.StringSlice("profile") {
-				result, err := whois.FindIP(p, c.String("region"), c.String("ip"))
+				result, err := whois.FindIP(p, c.String("region"), ip)
 				if err != nil {
 					return err
 				}
