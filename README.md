@@ -14,7 +14,7 @@ Or download the binary from [github releases](https://github.com/luizm/aws-whois
 
 ## Usage
 
-Basically use the `flag` --ip or `--dns`.
+Basically use the flag `--ip` or `--dns`.
 
 Examples:
 
