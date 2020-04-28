@@ -14,22 +14,22 @@ import (
 )
 
 type Result struct {
-	Profile string `json:"Profile"`
+	Profile string `json`
 	ENI     *DefaultOutput
 }
 
 type ResultNotFond struct {
-	Profile string `json:"Profile"`
+	Profile string `json`
 	Message string
 }
 
 type DefaultOutput struct {
-	Status           *string `json:"Status"`
-	VPCId            *string `json:"VPCId"`
-	VPCName          *string `json:"VPCName"`
-	Description      *string `json:"Description"`
-	InterfaceType    *string `json:"InterfaceType"`
-	AvailabilityZone *string `json:"AvailabilityZone"`
+	Status           *string `json`
+	VPCId            *string `json`
+	VPCName          *string `json`
+	Description      *string `json`
+	InterfaceType    *string `json`
+	AvailabilityZone *string `json`
 	EC2Associated    *EC2Output
 	RDSAssociated    *RDSOutput
 }
@@ -40,19 +40,19 @@ type RDSEndpoint struct {
 }
 
 type EC2Output struct {
-	InstanceId    *string    `json:"InstanceId"`
-	InstanceState *string    `json:"InstanceState"`
-	LaunchTime    *time.Time `json:"LaunchTime"`
-	InstanceType  *string    `json:"InstanceType"`
-	Tags          []*ec2.Tag `json:"Tags"`
+	InstanceId    *string    `json`
+	InstanceState *string    `json`
+	LaunchTime    *time.Time `json`
+	InstanceType  *string    `json`
+	Tags          []*ec2.Tag `json`
 }
 
 type RDSOutput struct {
-	Identifier      *string `json:"Identifier"`
-	Engine          *string `json:"Engine"`
-	DBInstanceClass *string `json:"DBInstanceClass"`
-	Endpoint        *string `json:"Endpoint"`
-	Status          *string `json:"Status"`
+	Identifier      *string `json`
+	Engine          *string `json`
+	DBInstanceClass *string `json`
+	Endpoint        *string `json`
+	Status          *string `json`
 }
 
 func newSession(profile, region string) (*session.Session, error) {
