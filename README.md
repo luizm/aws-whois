@@ -1,8 +1,6 @@
 ## Description
 
-**Still work in progress**
-
-If you have a lot of accounts and VPCs, this is a simple way to check where or which resource on AWS are using a specific public or private IP.
+If you have a lot of accounts and VPCs, this is a simple way to check based on DNS or IP, where is it running, and which resource on AWS is it.
 
 ## Install
 
@@ -14,83 +12,53 @@ Or download the binary from [github releases](https://github.com/luizm/aws-whois
 
 ## Usage
 
-Basically use the flag `--ip` or `--dns`.
+By default, all AWS profiles configured will be used to verify a specific address.
 
-Examples:
+Parameter available:
 
-`$ aws-whois --profile example --ip 54.X.X.X`
-
-```log
-{
-  "Profile": "example",
-  "ENI": {
-    "OwnerId": "xxxxxx",
-    "Description": "Interface for NAT Gateway nat-xxxxxx",
-    "InterfaceType": "nat_gateway",
-    "AvailabilityZone": "us-east-1c",
-  }
-  "EC2Associated": null
-}
+```
+GLOBAL OPTIONS:
+   --region value, -r value          the region to use. Overrides config/env settings. (default: "us-east-1")
+   --profile value, -p value         use a specific profile from your credential file.
+   --ignore-profile value, -i value  ignore a specific profile from your credential file, can be used multiple times.
+   --address value, -a value         the ip or dns address to find the resource associated
+   --help, -h                        show help (default: false)
+   --version, -v                     print the version (default: false)
 ```
 
-When use the flag `--dns` the address will be resolved before find out the resource.
+Example:
 
-`$ aws-whois --profile example --profile example2 --dns example.mydomain.local`
+`$ aws-whois --address 54.X.X.X`
 
 ```log
 {
-   "Profile": "example",
-   "Message": "ip 172.20.X.X not found"
+   "Profile": "example1",
+   "Message": "ip 54.X.X.X not found"
 }
 {
    "Profile": "example2",
-   "ENI": {
+   "Message": "ip 54.X.X.X not found"
+}
+{
+   "Profile": "example3",
+   "Result": {
       "Status": "in-use",
       "VPCId": "vpc-xxxxx",
-      "VPCName": "example",
+      "VPCName": "shared",
       "Description": "Primary network interface",
       "InterfaceType": "interface",
       "AvailabilityZone": "us-east-1a",
       "EC2Associated": {
          "InstanceId": "i-xxxxx",
          "InstanceState": "running",
-         "LaunchTime": "2020-04-20T19:59:40Z",
+         "LaunchTime": "2020-03-14T19:59:40Z",
          "InstanceType": "t3.micro",
          "Tags": [
             {
                "Key": "Name",
-               "Value": "example.mydomain.local"
+               "Value": "intance-example3.local"
             }
          ]
-      },
-      "RDSAssociated": null
-   }
-}
-```
-
-`$ aws-whois --profile example --profile example3 --ip 10.100.X.X`
-
-```log
-{
-   "Profile": "example",
-   "Message": "ip 10.100.X.X not found"
-}
-{
-   "Profile": "example3",
-   "ENI": {
-      "Status": "in-use",
-      "VPCId": "vpc-xxxxx",
-      "VPCName": "production",
-      "Description": "RDSNetworkInterface",
-      "InterfaceType": "interface",
-      "AvailabilityZone": "us-east-1c",
-      "EC2Associated": null,
-      "RDSAssociated": {
-         "Identifier": "rds-example",
-         "Engine": "postgres",
-         "DBInstanceClass": "db.m5.large",
-         "Endpoint": "rds-example.xxxxx.us-east-1.rds.amazonaws.com",
-         "Status": "available"
       }
    }
 }

@@ -16,26 +16,26 @@ func Execute() {
 			&cli.StringFlag{
 				Name:     "region",
 				Aliases:  []string{"r"},
-				Usage:    "The region to use. Overrides config/env settings.",
+				Usage:    "the region to use. Overrides config/env settings.",
 				Value:    "us-east-1",
 				Required: false,
 			},
 			&cli.StringFlag{
 				Name:     "profile",
 				Aliases:  []string{"p"},
-				Usage:    "Use a specific profile from your credential file. By default will be used all profiles.",
+				Usage:    "use a specific profile from your credential file.",
 				Required: false,
 			},
 			&cli.StringSliceFlag{
 				Name:     "ignore-profile",
 				Aliases:  []string{"i"},
-				Usage:    "Ignore a specific profile from your credential file",
+				Usage:    "ignore a specific profile from your credential file, can be used multiple times.",
 				Required: false,
 			},
 			&cli.StringFlag{
 				Name:     "address",
 				Aliases:  []string{"a"},
-				Usage:    "The ip or dns address to find the resource associated",
+				Usage:    "the ip or dns address to find the resource associated",
 				Required: true,
 			},
 		},
@@ -78,7 +78,7 @@ func Execute() {
 
 	app.Name = "aws-whois"
 	app.Usage = "Find out where and who is a specific address"
-	app.Version = "v0.1.0"
+	app.Version = "v1.0.2"
 
 	err := app.Run(os.Args)
 	if err != nil {
