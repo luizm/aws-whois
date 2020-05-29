@@ -17,22 +17,22 @@ type Result struct {
 }
 
 type ResultOutput struct {
-	Status           *string    `json:"Status"`
-	VPCId            *string    `json:"VPCId"`
-	VPCName          *string    `json:"VPCName"`
-	Description      *string    `json:"Description"`
-	InterfaceType    *string    `json:"InterfaceType"`
-	AvailabilityZone *string    `json:"AvailabilityZone"`
+	Status           *string
+	VPCId            *string
+	VPCName          *string
+	Description      *string
+	InterfaceType    *string
+	AvailabilityZone *string
 	EC2Associated    *EC2Output `json:",omitempty"`
 	RDSAssociated    *RDSOutput `json:",omitempty"`
 }
 
 type EC2Output struct {
-	InstanceId    *string    `json:"InstanceId"`
-	InstanceState *string    `json:"InstanceState"`
-	LaunchTime    *time.Time `json:"LaunchTime"`
-	InstanceType  *string    `json:"InstanceType"`
-	Tags          []*ec2.Tag `json:"Tags"`
+	InstanceId    *string
+	InstanceState *string
+	LaunchTime    *time.Time
+	InstanceType  *string
+	Tags          []*ec2.Tag
 }
 
 type RDSEndpoint struct {
@@ -41,11 +41,11 @@ type RDSEndpoint struct {
 }
 
 type RDSOutput struct {
-	Identifier      *string `json:"Identifier"`
-	Engine          *string `json:"Engine"`
-	DBInstanceClass *string `json:"DBInstanceClass"`
-	Endpoint        *string `json:"Endpoint"`
-	Status          *string `json:"Status"`
+	Identifier      *string
+	Engine          *string
+	DBInstanceClass *string
+	Endpoint        *string
+	Status          *string
 }
 
 func newSession(profile, region string) (*session.Session, error) {

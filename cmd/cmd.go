@@ -65,7 +65,8 @@ func Execute() {
 					fmt.Println(whois.ToJson(result))
 				}
 			} else {
-				result, err := whois.FindIP(c.String("profile"), c.String("region"), ip)
+				p := c.String("profile")
+				result, err := whois.FindIP(p, c.String("region"), ip)
 				if err != nil {
 					log.Println(fmt.Errorf(`failure to search in profile %v: %w`, p, err))
 				}
