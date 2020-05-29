@@ -1,10 +1,7 @@
 package whois
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,29 +11,20 @@ import (
 )
 
 type Result struct {
-	Profile string `json:"Profile"`
-	ENI     *DefaultOutput
+	Profile string
+	Message string        `json:",omitempty"`
+	Result  *ResultOutput `json:",omitempty"`
 }
 
-type ResultNotFond struct {
-	Profile string `json:"Profile"`
-	Message string
-}
-
-type DefaultOutput struct {
-	Status           *string `json:"Status"`
-	VPCId            *string `json:"VPCId"`
-	VPCName          *string `json:"VPCName"`
-	Description      *string `json:"Description"`
-	InterfaceType    *string `json:"InterfaceType"`
-	AvailabilityZone *string `json:"AvailabilityZone"`
-	EC2Associated    *EC2Output
-	RDSAssociated    *RDSOutput
-}
-
-type RDSEndpoint struct {
-	Identifier *string
-	Endpoint   *string
+type ResultOutput struct {
+	Status           *string    `json:"Status"`
+	VPCId            *string    `json:"VPCId"`
+	VPCName          *string    `json:"VPCName"`
+	Description      *string    `json:"Description"`
+	InterfaceType    *string    `json:"InterfaceType"`
+	AvailabilityZone *string    `json:"AvailabilityZone"`
+	EC2Associated    *EC2Output `json:",omitempty"`
+	RDSAssociated    *RDSOutput `json:",omitempty"`
 }
 
 type EC2Output struct {
@@ -45,6 +33,11 @@ type EC2Output struct {
 	LaunchTime    *time.Time `json:"LaunchTime"`
 	InstanceType  *string    `json:"InstanceType"`
 	Tags          []*ec2.Tag `json:"Tags"`
+}
+
+type RDSEndpoint struct {
+	Identifier *string
+	Endpoint   *string
 }
 
 type RDSOutput struct {
@@ -88,20 +81,6 @@ func getVPCName(sess *session.Session, v *string) (*string, error) {
 		}
 	}
 	return n, nil
-}
-
-func isPrivateIP(ip string) (bool, error) {
-	private := false
-	IP := net.ParseIP(ip)
-	if IP == nil {
-		return false, errors.New("invalid IP address")
-	}
-	_, prefix08, _ := net.ParseCIDR("10.0.0.0/8")
-	_, prefix12, _ := net.ParseCIDR("172.16.0.0/12")
-	_, prefix16, _ := net.ParseCIDR("192.168.0.0/16")
-	private = prefix08.Contains(IP) || prefix12.Contains(IP) || prefix16.Contains(IP)
-
-	return private, nil
 }
 
 func getRDSEndpoints(sess *session.Session) ([]RDSEndpoint, error) {
@@ -192,83 +171,67 @@ func getENIInfo(sess *session.Session, ip string) (*ec2.DescribeNetworkInterface
 	return result, nil
 }
 
-func ResolvDNS(dns string) ([]string, error) {
-	var ips []string
-	i, err := net.LookupIP(dns)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, i := range i {
-		ips = append(ips, i.String())
-	}
-	return ips, nil
-}
-
-func FindIP(profile, region, ip string) ([]byte, error) {
-	var e *EC2Output
-	var r *RDSOutput
+func FindIP(profile, region, ip string) (*Result, error) {
+	var ec2 *EC2Output
+	var rds *RDSOutput
 
 	sess, err := newSession(profile, region)
 	if err != nil {
-		return nil, err
+		return &Result{}, err
 	}
 
-	result, err := getENIInfo(sess, ip)
+	eni, err := getENIInfo(sess, ip)
 	if err != nil {
-		return nil, err
+		return &Result{}, err
 	}
-	if result.NetworkInterfaces == nil {
-		r := &ResultNotFond{
+	if eni.NetworkInterfaces == nil {
+		result := &Result{
 			Profile: profile,
 			Message: fmt.Sprintf("ip %v not found", ip),
 		}
-		b, err := json.MarshalIndent(r, "", "   ")
-		if err != nil {
-			return nil, err
-		}
-		return b, nil
+		return result, nil
 	}
 
-	VPCName, err := getVPCName(sess, result.NetworkInterfaces[0].VpcId)
+	VPCName, err := getVPCName(sess, eni.NetworkInterfaces[0].VpcId)
 	if err != nil {
-		return nil, err
+		return &Result{}, err
 	}
-	if *result.NetworkInterfaces[0].Description == "RDSNetworkInterface" {
-		endpoints, err := getRDSEndpoints(sess)
+
+	// Getting information about EC2
+	instanceID := eni.NetworkInterfaces[0].Attachment.InstanceId
+	if instanceID != nil {
+		ec2, _ = getEC2Info(sess, instanceID)
+	}
+
+	// Getting information about RDS
+	if *eni.NetworkInterfaces[0].Description == "RDSNetworkInterface" {
+		RDSEndpoints, err := getRDSEndpoints(sess)
 		if err != nil {
-			return nil, err
+			return &Result{}, err
 		}
 
-		for _, e := range endpoints {
-			i, _ := ResolvDNS(string(*e.Endpoint))
+		for _, r := range RDSEndpoints {
+			i, _ := ResolvDNS(string(*r.Endpoint))
 			if ip == string(i[0]) {
-				r, _ = getRDSInfo(sess, e.Identifier)
+				rds, _ = getRDSInfo(sess, r.Identifier)
 				break
 			}
 		}
 	}
 
-	instanceID := result.NetworkInterfaces[0].Attachment.InstanceId
-	if instanceID != nil {
-		e, _ = getEC2Info(sess, instanceID)
-	}
-	o := Result{
+	result := &Result{
 		Profile: profile,
-		ENI: &DefaultOutput{
-			Status:           result.NetworkInterfaces[0].Status,
-			VPCId:            result.NetworkInterfaces[0].VpcId,
+		Result: &ResultOutput{
+			Status:           eni.NetworkInterfaces[0].Status,
+			VPCId:            eni.NetworkInterfaces[0].VpcId,
 			VPCName:          VPCName,
-			Description:      result.NetworkInterfaces[0].Description,
-			InterfaceType:    result.NetworkInterfaces[0].InterfaceType,
-			AvailabilityZone: result.NetworkInterfaces[0].AvailabilityZone,
-			EC2Associated:    e,
-			RDSAssociated:    r,
+			Description:      eni.NetworkInterfaces[0].Description,
+			InterfaceType:    eni.NetworkInterfaces[0].InterfaceType,
+			AvailabilityZone: eni.NetworkInterfaces[0].AvailabilityZone,
+			EC2Associated:    ec2,
+			RDSAssociated:    rds,
 		},
 	}
-	b, err := json.MarshalIndent(o, "", "   ")
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
+
+	return result, nil
 }

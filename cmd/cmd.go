@@ -6,6 +6,7 @@ import (
 	"os"
 
 	whois "github.com/luizm/aws-whois/pkg"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,49 +14,70 @@ func Execute() {
 	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "region",
-				Aliases:     []string{"r"},
-				Usage:       "The region to use. Overrides config/env settings",
-				DefaultText: "us-east-1",
-				Required:    false,
+				Name:     "region",
+				Aliases:  []string{"r"},
+				Usage:    "The region to use. Overrides config/env settings.",
+				Value:    "us-east-1",
+				Required: false,
 			},
-			&cli.StringSliceFlag{
+			&cli.StringFlag{
 				Name:     "profile",
 				Aliases:  []string{"p"},
-				Usage:    "Use a specific profile from your credential file",
-				Required: true,
+				Usage:    "Use a specific profile from your credential file. By default will be used all profiles.",
+				Required: false,
 			},
-			&cli.StringFlag{
-				Name:     "ip",
+			&cli.StringSliceFlag{
+				Name:     "ignore-profile",
 				Aliases:  []string{"i"},
-				Usage:    "The ip address to find the resource associated",
+				Usage:    "Ignore a specific profile from your credential file",
 				Required: false,
 			},
 			&cli.StringFlag{
-				Name:     "dns",
-				Aliases:  []string{"d"},
-				Usage:    "The dns address to find the resource associated, if return more than 1 ip, will be used the first",
-				Required: false,
+				Name:     "address",
+				Aliases:  []string{"a"},
+				Usage:    "The ip or dns address to find the resource associated",
+				Required: true,
 			},
 		},
 		Action: func(c *cli.Context) error {
-			var ip string
-			ip = c.String("ip")
-
-			if c.String("dns") != "" {
-				ips, _ := whois.ResolvDNS(c.String("dns"))
+			ip := c.String("address")
+			if !whois.IsIP(c.String("address")) {
+				ips, err := whois.ResolvDNS(c.String("address"))
+				if err != nil {
+					return fmt.Errorf(`unable to resolve DNS: %w`, err)
+				}
 				ip = ips[0]
 			}
-			for _, p := range c.StringSlice("profile") {
-				result, err := whois.FindIP(p, c.String("region"), ip)
+
+			if c.String("profile") == "" {
+				profiles, err := whois.ShowAWSProfile()
 				if err != nil {
-					return err
+					return fmt.Errorf(`failed to load the local profiles: %w`, err)
 				}
-				fmt.Println(string(result))
+				profiles = whois.DiffSliceString(profiles, c.StringSlice("ignore-profile"))
+
+				for _, p := range profiles {
+					result, err := whois.FindIP(p, c.String("region"), ip)
+					if err != nil {
+						log.Println(fmt.Errorf(`failure to search in profile %v: %w`, p, err))
+						continue
+					}
+					fmt.Println(whois.ToJson(result))
+				}
+			} else {
+				result, err := whois.FindIP(c.String("profile"), c.String("region"), ip)
+				if err != nil {
+					log.Println(fmt.Errorf(`failure to search in profile %v: %w`, p, err))
+				}
+				fmt.Println(whois.ToJson(result))
 			}
 			return nil
 		},
 	}
+
+	app.Name = "aws-whois"
+	app.Usage = "Find out where and who is a specific address"
+	app.Version = "v0.1.0"
 
 	err := app.Run(os.Args)
 	if err != nil {
