@@ -44,7 +44,7 @@ Example:
    "Result": {
       "Status": "in-use",
       "VPCId": "vpc-xxxxx",
-      "VPCName": "shared",
+      "VPCName": "vpc-example",
       "Description": "Primary network interface",
       "InterfaceType": "interface",
       "AvailabilityZone": "us-east-1a",
