@@ -109,10 +109,9 @@ func getRDSInfo(sess *session.Session, r *string) (*RDSOutput, error) {
 		DBInstanceIdentifier: r,
 	})
 	if err != nil {
-		if err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
+
 	return &RDSOutput{
 		Identifier:      result.DBInstances[0].DBInstanceIdentifier,
 		Engine:          result.DBInstances[0].Engine,
