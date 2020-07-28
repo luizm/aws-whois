@@ -1,7 +1,7 @@
-name: Codecov
+name: codeconv
 on: [push]
 jobs:
-  run:
+  report:
     runs-on: ubuntu-latest
     env:
       PYTHON: "3.7"
