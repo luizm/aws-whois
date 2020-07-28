@@ -27,7 +27,7 @@ func ShowAWSProfile() ([]string, error) {
 	return profiles, nil
 }
 
-func DiffSliceString(a, b []string) []string {
+func RemoveElementOfSliceString(a, b []string) []string {
 	mb := make(map[string]string, len(b))
 	for _, x := range b {
 		mb[x] = x

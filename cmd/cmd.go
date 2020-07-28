@@ -62,7 +62,7 @@ func Execute() {
 					return fmt.Errorf(`failed to load the local profiles: %w`, err)
 				}
 			}
-			profiles = whois.DiffSliceString(profiles, c.StringSlice("ignore-profile"))
+			profiles = whois.RemoveElementOfSliceString(profiles, c.StringSlice("ignore-profile"))
 
 			waitGroup.Add(len(profiles))
 
