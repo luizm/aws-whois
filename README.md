@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/luizm/aws-whois)](https://goreportcard.com/report/github.com/luizm/aws-whois)
 [![codecov](https://codecov.io/gh/luizm/aws-whois/branch/master/graph/badge.svg)](https://codecov.io/gh/luizm/aws-whois)
 
 ## Description
