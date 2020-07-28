@@ -20,7 +20,7 @@ func Fmt() error {
 }
 
 func Test() error {
-	out, err := sh.Output("go", "test", "-v", "./...")
+	out, err := sh.Output("go", "test", "-v", "./...", "-coverprofile=coverage.txt", "-covermode=atomic")
 	if err != nil {
 		return err
 	}
