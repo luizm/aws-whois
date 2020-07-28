@@ -12,25 +12,19 @@ import (
 )
 
 func ShowAWSProfile() ([]string, error) {
-	var profile []string
-	var p []string
+	var profiles []string
 
 	config, err := ini.Load(filepath.Join(os.Getenv("HOME"), ".aws/config"))
 	if err != nil {
 		return nil, err
 	}
 
-	credentials, err := ini.Load(filepath.Join(os.Getenv("HOME"), ".aws/credentials"))
-	if err != nil {
-		return nil, err
-	}
-	profile = append(config.SectionStrings(), credentials.SectionStrings()...)
-	for _, r := range profile {
-		if r != "DEFAULT" {
-			p = append(p, strings.Replace(r, "profile ", "", -1))
+	for _, c := range config.SectionStrings() {
+		if c != "DEFAULT" {
+			profiles = append(profiles, strings.Replace(c, "profile ", "", -1))
 		}
 	}
-	return p, nil
+	return profiles, nil
 }
 
 func DiffSliceString(a, b []string) []string {
