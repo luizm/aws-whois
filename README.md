@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/luizm/aws-whois/branch/master/graph/badge.svg)](https://codecov.io/gh/luizm/aws-whois)
+
 ## Description
 
 If you have a lot of accounts and VPCs, this is a simple way to check based on DNS or IP, where is it running, and which resource on AWS is it.
